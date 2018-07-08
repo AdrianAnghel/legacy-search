@@ -1,5 +1,5 @@
 *.iml
 target/
 .idea/
-.cfg.xml
+*.cfg.xml
 
