@@ -3,6 +3,7 @@ package fr.pilato.demo.legacysearch.service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.pilato.demo.legacysearch.dao.ElasticSearchDao;
 import fr.pilato.demo.legacysearch.dao.HibernateService;
 import fr.pilato.demo.legacysearch.dao.PersonDao;
 import fr.pilato.demo.legacysearch.dao.SearchDao;
@@ -32,16 +33,18 @@ public class PersonService {
     private final HibernateService hibernateService;
     private final ObjectMapper mapper;
     private final DozerBeanMapper dozerBeanMapper;
+    private final ElasticSearchDao elasticSearchDao;
 
     @Inject
     public PersonService(PersonDao personDao, SearchDao searchDao,
                          HibernateService hibernateService,
-                         ObjectMapper mapper, DozerBeanMapper dozerBeanMapper) {
+                         ObjectMapper mapper, DozerBeanMapper dozerBeanMapper, ElasticSearchDao elasticSearchDao) {
         this.personDao = personDao;
         this.searchDao = searchDao;
         this.hibernateService = hibernateService;
         this.mapper = mapper;
         this.dozerBeanMapper = dozerBeanMapper;
+        this.elasticSearchDao = elasticSearchDao;
     }
 
     public Person get(Integer id) {
@@ -58,8 +61,14 @@ public class PersonService {
         hibernateService.beginTransaction();
 
         Person personDb = personDao.save(person);
-
         hibernateService.commitTransaction();
+
+        try {
+            elasticSearchDao.save(person);
+        } catch (IOException e) {
+            logger.error("Unable to save in Elastic Search ", e);
+        }
+
         return personDb;
     }
 
@@ -92,6 +101,8 @@ public class PersonService {
         }
         personDao.delete(person);
         hibernateService.commitTransaction();
+
+        elasticSearchDao.delete(person.idAsString());
 
         logger.debug("Person deleted: {}", id);
 
