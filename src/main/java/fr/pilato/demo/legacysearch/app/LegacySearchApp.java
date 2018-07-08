@@ -30,7 +30,7 @@ public class LegacySearchApp {
 
     public static void main(String[] args) throws Exception {
 
-        int port = Integer.valueOf(Optional.fromNullable(System.getenv("PORT")).or("8080"));
+        int port = Integer.valueOf(Optional.fromNullable(System.getProperty("PORT")).or("8081"));
         WebServer server = new Jetty8WebServer(WEB_INF_LOCATION, WEB_APP_LOCATION, port, "0.0.0.0");
 
         System.setProperty("restx.mode", System.getProperty("restx.mode", "prod"));
