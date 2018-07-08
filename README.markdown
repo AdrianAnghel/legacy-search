@@ -50,6 +50,13 @@ createdb person
 mysqladmin -uroot create person
 ```
 
+For Windows:
+Connect to the MySQL db
+mysql -u root -p -h 127.0.0.1
+
+Create the database
+create database person;
+
 
 Start the server using jetty
 
